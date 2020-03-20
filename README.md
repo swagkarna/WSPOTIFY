@@ -13,9 +13,9 @@ Brute-forcer for spotify accounts
 
 ## Requirements
 
+   * Libspotify
    * Sconsify
    * Portaudio
-   * Curl
 
 ## Authors: 
 
