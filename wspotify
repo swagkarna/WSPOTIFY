@@ -98,6 +98,6 @@ while read line; do
          echo -e "[\e[1;31m<<\e[0m] - Wrong Password: ${SPOTIFY_USER}:${SPOTIFY_PASS}"
       else
           echo -e "[\e[1;32m>>\e[0m] - Cracked Password: ${SPOTIFY_USER}:${SPOTIFY_PASS}" 
-          echo -e "${SPOTIFY_USER}:${SPOTIFY_PASS}" >> /root/emagnet/cracked-accounts/cracked-spotify-accounts.txt
+          echo -e "${SPOTIFY_USER}:${SPOTIFY_PASS}" >> /root/cracked-spotify-accounts.txt
       fi
 done < $1
