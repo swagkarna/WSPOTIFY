@@ -1,6 +1,6 @@
 # WSPOTIFY
 
-Brute-forcer for spotify accounts
+Brute-Force spotify accounts
 
 ## HOWTO
 
