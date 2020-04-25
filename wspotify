@@ -46,6 +46,7 @@ __      _____ _ __   ___ | |_(_)/ _|_   _
 EOF
 }
 
+requirements() {
 find /usr/include -type d |grep 'libspotify' &> /dev/null
              if [[ "$?" -ne "0" ]]; then
              if [[ -z "$LIBSPOTIFY" ]]; then
@@ -56,8 +57,18 @@ find /usr/include -type d |grep 'libspotify' &> /dev/null
                    echo "Exiting.."
                    exit 1
                  fi
-fi
-fi
+             fi
+             fi
+
+find /usr/include -name "portaudio.h" |xargs grep -v "port" &> /dev/null
+   if [[ $? -ne 0 ]]; then 
+       echo -e "$basename$0: internal error -- portaudio is requrired to be installed"
+       exit 1
+    fi
+}
+
+requirements
+
 ./sconsify -version &> /dev/null
    if [[ "$?" -ne "0" ]]; then
         echo "Sconsify is required to be installed before we attacking targets.."
